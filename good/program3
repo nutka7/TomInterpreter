@@ -1,0 +1,26 @@
+/* Shadowing variables */
+{
+    var i: int.
+    var j: bool.
+    var k: int.
+    
+    j = true;
+    i = 7;
+    
+    {
+        var i: bool.
+        if (!i && (k != 0 || k <= 0 && k >= 0)) {
+            var j: bool.
+            print true;
+            j = false;
+        }
+        print j;
+        {
+            var i: int.
+            i = 4;
+        }
+        print i == false;
+    }
+    print i == 7;
+}
+/* Program should print four times "True" */

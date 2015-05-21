@@ -1,0 +1,49 @@
+comment "/*" "*/" ;
+
+TInt.  Type1 ::= "int" ;
+TBool. Type1 ::= "bool" ;
+coercions Type 1 ;
+
+
+BTrue.   BExp   ::= "true" ;
+BFalse.  BExp   ::= "false" ;
+
+EOr.     Exp    ::= Exp  "||" Exp1 ;
+EAnd.    Exp1   ::= Exp1 "&&" Exp2 ;
+EEq.     Exp2   ::= Exp2 "==" Exp3 ;
+ENeq.    Exp2   ::= Exp2 "!=" Exp3 ;
+ELt.     Exp3   ::= Exp3 "<" Exp4 ;
+EGt.     Exp3   ::= Exp3 ">" Exp4 ;
+ELte.    Exp3   ::= Exp3 "<=" Exp4 ;
+EGte.    Exp3   ::= Exp3 ">=" Exp4 ;
+EAdd.    Exp4   ::= Exp4 "+" Exp5 ;
+ESub.    Exp4   ::= Exp4 "-" Exp5 ;
+EMul.    Exp5   ::= Exp5 "*" Exp6 ;
+EDiv.    Exp5   ::= Exp5 "/" Exp6 ;
+EMod.    Exp5   ::= Exp5 "%" Exp6 ;
+ENeg.    Exp6   ::= "-" Exp6 ;
+ENot.    Exp6   ::= "!" Exp6 ;
+EVar.    Exp8   ::= Ident ;
+EInt.    Exp8   ::= Integer ;
+EBool.   Exp8   ::= BExp ;
+EIver.   Exp8   ::= "[" Exp "]" ;
+coercions Exp 8 ;
+
+Decl. Decl ::= "var" Ident ":" Type ;
+terminator Decl "." ;
+
+
+LIdent.  Lvalue ::= Ident ;
+
+SBlock.  Stm ::= "{" [Decl] [Stm] "}" ;
+SExp.    Stm ::= Exp ";" ;
+SWhile.  Stm ::= "while" "(" Exp ")" Stm ;
+SReturn. Stm ::= "return" Exp ";" ;
+SAssign. Stm ::= Lvalue "=" Exp ";" ;
+SPrint.  Stm ::= "print" Exp ";" ;
+SIf.     Stm ::= "if" "(" Exp ")" Stm ;
+SIfElse. Stm ::= "if" "(" Exp ")" Stm "else" Stm ;
+
+terminator Stm "" ;
+
+entrypoints Stm;

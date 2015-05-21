@@ -1,0 +1,18 @@
+{
+    /* Declarations */
+    var sum: int.
+    var i: int.
+    var limit: int.
+    
+    /* Initialization */
+    i = 1;
+    limit = 200;
+        
+    /* Statements */
+    while (i < limit) {
+        print i;
+        sum = sum + i;
+        i = i + 1;
+    }
+    print sum;
+}

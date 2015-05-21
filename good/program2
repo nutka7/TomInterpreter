@@ -1,0 +1,30 @@
+{
+    var number: int.
+    var remember : int.
+    var check: int.
+    var j: int.
+    var divisors: int.
+    
+    number = 543223464132;
+    remember = number;
+    check = 1;
+    j = 2;
+
+    while (j*j <= number) {
+        divisors = divisors + [number % j == 0];
+        if (number % j == 0) {
+            print j;
+            number = number / j;
+            check = check * j;
+        }
+        else
+            j = j + 1;
+    }
+    if (number > 1) {
+        print number;
+        divisors = divisors + 1;
+        check = check * number;
+    }
+    print remember == check;
+    return divisors;
+}

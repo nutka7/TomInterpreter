@@ -1,0 +1,26 @@
+/* Return breaks execution */
+{
+    var i: int.
+    while (i < 50) {
+        var j: int.
+        i = i + 1;
+        while (j < 60) {
+            var k: int.
+            j = j + 1;
+            while (k < 70) {
+                k = k + 1;
+                if (i == 7 && j == 3 && k == 11) {
+                    print i;
+                    print j;
+                    print k;
+                    return i + j + k;
+                }
+                if (i > 7) {
+                    print false;
+                }
+            }
+        }
+    }
+}
+
+/* Program should return 21 */

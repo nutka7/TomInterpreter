@@ -1,0 +1,156 @@
+Tom Macieszczak (indeks tm337620) - deklaracja języka
+
+TDict. Type ::= Type1 "@" Type ;
+TInt.  Type1 ::= "int" ;
+TBool. Type1 ::= "bool" ;
+TUnit. Type1 ::= "*" ;
+coercions Type 1 ;
+
+---
+"@" to konstruktor typu słownikowego. W semantyce przypisania słownik naśladuje std::map z C++.
+Dowolny typ zbudowany przy pomocy powyższych konstrukcji ma zdefiniowane operatory porównania.
+---
+
+TypeByValueP. ParamKind ::= Type ;
+TypeByRefP.   ParamKind ::= "&" Type ;
+FuncTypeP.    ParamKind ::= FunctionType ;
+
+terminator ParamKind "" ;
+separator ParamKind "," ;
+
+TFunc. FunctionType ::= "(" [ParamKind] "->" Type ")" ;
+
+---
+Funkcje zawsze zwracają wynik. Zwracane mogą być tylko dane.
+Parametrami mogą być dane, przekazywane przez wartość lub referencję, a także funkcje.
+Funkcje takie mają dostęp do zmiennych ze scope'u jak w Pascalu.
+---
+
+EOr.     Exp    ::= Exp  "||" Exp1 ;
+EAnd.    Exp1   ::= Exp1 "&&" Exp2 ;
+EEq.     Exp2   ::= Exp2 "==" Exp3 ;
+ENeq.    Exp2   ::= Exp2 "!=" Exp3 ;
+ELt.     Exp3   ::= Exp3 "<" Exp4 ;
+EGt.     Exp3   ::= Exp3 ">" Exp4 ;
+ELte.    Exp3   ::= Exp3 "<=" Exp4 ;
+EGte.    Exp3   ::= Exp3 ">=" Exp4 ;
+EAdd.    Exp4   ::= Exp4 "+" Exp5 ;
+ESub.    Exp4   ::= Exp4 "-" Exp5 ;
+EMul.    Exp5   ::= Exp5 "*" Exp6 ;
+EDiv.    Exp5   ::= Exp5 "/" Exp6 ;
+ESize.   Exp6   ::= "#" Exp7 ;
+EAccess. Exp7   ::= Exp7 "[" Exp "]" ;
+EHas.    Exp7   ::= Exp7 "[^" Exp "^]" ;
+ECall.   Exp7   ::= Ident "(" [Arg] ")" ;
+EVar.    Exp7   ::= Ident ;
+EInt.    Exp7   ::= Integer ;
+EBool.   Exp7   ::= Bool ;
+EUnit    Exp7   ::= "*";
+
+coercions Exp 7 ;
+
+ExpArg.      Arg ::= Exp ;
+FuncArg.     Arg ::= "$" Ident ;
+AnomFuncArg. Arg ::= "$" AnomFunction ;
+
+terminator Arg "";
+separator Arg ",";
+
+---
+|| i && są leniwe jak w C.
+# zwraca liczbę mapowań w słowniku
+[^_^] mówi czy w słowniku jest dany klucz
+[ _ ] zwraca wartość odpowiadającą kluczowi
+Ident jak zwykłe identyfikatory w C.
+
+W wywołaniach funkcji mogą się pojawiać anonimowe funkcje jako argumenty.
+Widzą one te same nazwy, co regularne funkcje zdefiniowane na początku bloku.
+---
+
+Dec. Decl ::= Ident ":" Type ;
+terminator Decl "" ;
+separator Decl "";
+
+FunDef. FunctionDef ::= "fun" Ident AnomFunc ;
+terminator FunctionDef "" ;
+separator FunctionDef "" ;
+
+FuncP. Param ::= Ident ":" ParamKind ;
+terminator Param "" ;
+separator Param "," ;
+
+AnomFunc. AnomFunction ::= "(" [Param] "->" Type ")" Stm ;
+
+Prog. Program ::= FunctionDef ; /* nie powinna mieć argumentów i zwrócić unit */
+
+
+LExpAccess. LExp ::= LExp "[" Exp "]" ;
+LExpIdent. LExp ::= Ident ;
+
+SBlock.  Stm ::= "{" [Decl] [FunctionDef] [Stm] "}" ;
+SExp.    Stm ::= Exp ";" ;
+SWhile.  Stm ::= "while" "(" Exp ")" Stm;
+SReturn. Stm ::= "return" Exp ";" ;
+SAssign. Stm ::= LExp "=" Exp ";" ;
+SFor.    Stm ::=  "for" Ident "in" Exp Stm;
+SPrint.  Stm ::= "print" Exp ";" ;
+SIf.     Stm ::= "if" "(" Exp ")" "then" Stm "endif";
+SIfElse. Stm ::= "if" "(" Exp ")" "then" Stm "else" Stm "endif";
+
+---
+Zmienne są domyślnie inicjalizowane. Boole na false, Inty na 0, słowniki są puste.
+Funkcje zadeklarowane w bloku widzą siebie wzajemnie jak i zadeklarowane zmienne.
+Petla for wykonuje Stm dla każdego klucza w Exp (który jest słownikiem, rzecz jasna).
+---
+
+>>>>>>>>> Przykładowe programy <<<<<<<<
+
+1.---
+fun main(-> *) {
+    fun poteguj(podstawa: int, wykladnik: int -> int) {
+        result: int;
+        result = 1;
+        while (wykladnik > 0) {
+            result = result * podstawa;
+            wykladnik = wykladnik - 1;
+        }
+        return podstawa;
+    }
+    print poteguj(2, 7);
+    return *;
+} 
+Powinno wypisać "128".
+
+2.---
+fun kwadraty(->*) {
+    limit: int
+    s: int @ int
+    fun f(od: int -> int @ int) {
+        slownik: int @ int;
+        while (od <= limit) {
+            slownik[od] = kwadrat(od);
+            od = od + 1;
+        }
+        return slownik;
+    }
+    fun kwadrat(a: int -> int) return a * a;
+
+    limit = 10;
+    s = f(1);
+    for liczba in s
+        print s[liczba];
+
+    return *;
+}
+Powinno wypisać "1 4 9 16 25 36 49 64 81 100".
+
+3.---
+fun zlozenie (->*) {
+    fun aplikuj (arg: int, f1: (int -> int), f2: (int, int -> int) -> int) {
+        return f2(f1(arg), f1(arg));
+    }
+    
+    print aplikuj(2, $(a: int -> int) {return a+1;}, $(a: int, b: int -> int) {return a+b};);
+    return *;
+}
+Powinno wypisać 6.

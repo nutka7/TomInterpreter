@@ -1,0 +1,10 @@
+/* Syntax error - intermingled declarations and statements */
+
+{
+    var x: int.
+    x = 2;
+    var y: bool.
+    y = true;
+    print x;
+    print y;
+}
