@@ -14,7 +14,7 @@ type Semantics = ReaderT Env (ErrorT String (StateT Stor IO))
 type Var = String
 type Loc = Int
 type Env = M.Map Var Loc
-data Stor = Stor { freeLoc :: Loc, memory :: M.Map Loc Val }
+data Stor = Stor { nextLoc :: Loc, memory :: M.Map Loc Val }
     deriving (Show, Eq)
 
 data Val = VInt Integer | VBool Bool deriving (Show, Eq)
@@ -49,9 +49,14 @@ write loc val = do
 
 alloc :: Semantics Loc
 alloc = do
-    free <- gets freeLoc
-    modify $ \s -> s { freeLoc = free + 1 }
-    return free
+    loc <- gets nextLoc
+    modify $ \s -> s { nextLoc = loc + 1 }
+    return loc
+
+free :: Loc -> Semantics ()
+free loc = do
+    mem <- gets memory
+    modify $ \s -> s { memory = M.delete loc mem }
 
 {- Expressions -}
 eval :: Exp -> Semantics Val
@@ -157,8 +162,10 @@ exec (SPrint e) = do
     return Nothing
 
 exec (SBlock declList stmList) = do
-    blockEnv <- declVars declList
-    local (const blockEnv) (execStms stmList)
+    (blockEnv, locList) <- declVars declList
+    rval <- local (const blockEnv) (execStms stmList)
+    mapM_ free locList
+    return rval
 
 execStms :: [Stm] -> Semantics (Maybe Val)
 execStms stmList = foldM appendStm Nothing stmList
@@ -170,16 +177,17 @@ appendStm rval _ = return rval
 bind :: Var -> Loc -> Env -> Env
 bind = M.insert
 
-declVars :: [Decl] -> Semantics Env
+declVars :: [Decl] -> Semantics (Env, [Loc])
 declVars declList = do
     env <- ask
-    foldM declVar env declList
+    foldM declVar (env, []) declList
 
-declVar :: Env -> Decl -> Semantics Env
-declVar env d = do
+declVar :: (Env, [Loc]) -> Decl -> Semantics (Env, [Loc])
+declVar (env, locList) d = do
     let Decl (Ident var) varT = d
     loc <- alloc
     case varT of
         TInt  -> write loc (VInt 0)
         TBool -> write loc (VBool False)
-    return $ bind var loc env
+    let env' = bind var loc env
+    return (env', loc:locList)
