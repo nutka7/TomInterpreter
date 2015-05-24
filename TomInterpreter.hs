@@ -61,7 +61,7 @@ free loc = do
 {- Expressions -}
 eval :: Exp -> Semantics Val
 
-eval (EVar (Ident var)) = resolve var >>= fetch
+eval (ELvalue (Ident var)) = resolve var >>= fetch
 
 eval (EInt i) = return $ VInt i
 
