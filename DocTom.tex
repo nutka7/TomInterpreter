@@ -41,9 +41,9 @@ The reserved words used in Tom are the following: \\
 
 \begin{tabular}{lll}
 {\reserved{bool}} &{\reserved{else}} &{\reserved{false}} \\
-{\reserved{if}} &{\reserved{int}} &{\reserved{print}} \\
-{\reserved{return}} &{\reserved{true}} &{\reserved{var}} \\
-{\reserved{while}} & & \\
+{\reserved{fun}} &{\reserved{if}} &{\reserved{int}} \\
+{\reserved{print}} &{\reserved{ref}} &{\reserved{return}} \\
+{\reserved{true}} &{\reserved{var}} &{\reserved{while}} \\
 \end{tabular}\\
 
 The symbols used in Tom are the following: \\
@@ -55,8 +55,9 @@ The symbols used in Tom are the following: \\
 {\symb{{$>$}{$=$}}} &{\symb{{$+$}}} &{\symb{{$-$}}} \\
 {\symb{*}} &{\symb{/}} &{\symb{\%}} \\
 {\symb{!}} &{\symb{[}} &{\symb{]}} \\
-{\symb{:}} &{\symb{.}} &{\symb{\{}} \\
-{\symb{\}}} &{\symb{;}} &{\symb{{$=$}}} \\
+{\symb{,}} &{\symb{:}} &{\symb{.}} \\
+{\symb{\{}} &{\symb{\}}} &{\symb{;}} \\
+{\symb{{$=$}}} &{\symb{{$-$}{$>$}}} & \\
 \end{tabular}\\
 
 \subsection*{Comments}
@@ -127,6 +128,11 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
+{\nonterminal{Exp7}} & {\arrow}  &{\nonterminal{Ident}} {\terminal{(}} {\nonterminal{ListExp}} {\terminal{)}}  \\
+ & {\delimit}  &{\nonterminal{Exp8}}  \\
+\end{tabular}\\
+
+\begin{tabular}{lll}
 {\nonterminal{Exp8}} & {\arrow}  &{\nonterminal{Ident}}  \\
  & {\delimit}  &{\nonterminal{Integer}}  \\
  & {\delimit}  &{\nonterminal{BExp}}  \\
@@ -135,7 +141,9 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Exp7}} & {\arrow}  &{\nonterminal{Exp8}}  \\
+{\nonterminal{ListExp}} & {\arrow}  &{\emptyP} \\
+ & {\delimit}  &{\nonterminal{Exp}}  \\
+ & {\delimit}  &{\nonterminal{Exp}} {\terminal{,}} {\nonterminal{ListExp}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
@@ -152,7 +160,7 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Stm}} & {\arrow}  &{\terminal{\{}} {\nonterminal{ListDecl}} {\nonterminal{ListStm}} {\terminal{\}}}  \\
+{\nonterminal{Stm}} & {\arrow}  &{\terminal{\{}} {\nonterminal{ListDecl}} {\nonterminal{ListFunDef}} {\nonterminal{ListStm}} {\terminal{\}}}  \\
  & {\delimit}  &{\nonterminal{Exp}} {\terminal{;}}  \\
  & {\delimit}  &{\terminal{while}} {\terminal{(}} {\nonterminal{Exp}} {\terminal{)}} {\nonterminal{Stm}}  \\
  & {\delimit}  &{\terminal{return}} {\nonterminal{Exp}} {\terminal{;}}  \\
@@ -165,6 +173,26 @@ All other symbols are terminals.\\
 \begin{tabular}{lll}
 {\nonterminal{ListStm}} & {\arrow}  &{\emptyP} \\
  & {\delimit}  &{\nonterminal{Stm}} {\nonterminal{ListStm}}  \\
+\end{tabular}\\
+
+\begin{tabular}{lll}
+{\nonterminal{FunDef}} & {\arrow}  &{\terminal{fun}} {\nonterminal{Ident}} {\terminal{(}} {\nonterminal{ListParam}} {\terminal{)}} {\terminal{{$-$}{$>$}}} {\nonterminal{Type}} {\nonterminal{Stm}}  \\
+\end{tabular}\\
+
+\begin{tabular}{lll}
+{\nonterminal{ListFunDef}} & {\arrow}  &{\emptyP} \\
+ & {\delimit}  &{\nonterminal{FunDef}} {\nonterminal{ListFunDef}}  \\
+\end{tabular}\\
+
+\begin{tabular}{lll}
+{\nonterminal{Param}} & {\arrow}  &{\terminal{var}} {\nonterminal{Ident}} {\terminal{:}} {\nonterminal{Type}}  \\
+ & {\delimit}  &{\terminal{ref}} {\nonterminal{Ident}} {\terminal{:}} {\nonterminal{Type}}  \\
+\end{tabular}\\
+
+\begin{tabular}{lll}
+{\nonterminal{ListParam}} & {\arrow}  &{\emptyP} \\
+ & {\delimit}  &{\nonterminal{Param}}  \\
+ & {\delimit}  &{\nonterminal{Param}} {\terminal{,}} {\nonterminal{ListParam}}  \\
 \end{tabular}\\
 
 

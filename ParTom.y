@@ -23,32 +23,36 @@ import ErrM
  ')' { PT _ (TS _ 6) }
  '*' { PT _ (TS _ 7) }
  '+' { PT _ (TS _ 8) }
- '-' { PT _ (TS _ 9) }
- '.' { PT _ (TS _ 10) }
- '/' { PT _ (TS _ 11) }
- ':' { PT _ (TS _ 12) }
- ';' { PT _ (TS _ 13) }
- '<' { PT _ (TS _ 14) }
- '<=' { PT _ (TS _ 15) }
- '=' { PT _ (TS _ 16) }
- '==' { PT _ (TS _ 17) }
- '>' { PT _ (TS _ 18) }
- '>=' { PT _ (TS _ 19) }
- '[' { PT _ (TS _ 20) }
- ']' { PT _ (TS _ 21) }
- 'bool' { PT _ (TS _ 22) }
- 'else' { PT _ (TS _ 23) }
- 'false' { PT _ (TS _ 24) }
- 'if' { PT _ (TS _ 25) }
- 'int' { PT _ (TS _ 26) }
- 'print' { PT _ (TS _ 27) }
- 'return' { PT _ (TS _ 28) }
- 'true' { PT _ (TS _ 29) }
- 'var' { PT _ (TS _ 30) }
- 'while' { PT _ (TS _ 31) }
- '{' { PT _ (TS _ 32) }
- '||' { PT _ (TS _ 33) }
- '}' { PT _ (TS _ 34) }
+ ',' { PT _ (TS _ 9) }
+ '-' { PT _ (TS _ 10) }
+ '->' { PT _ (TS _ 11) }
+ '.' { PT _ (TS _ 12) }
+ '/' { PT _ (TS _ 13) }
+ ':' { PT _ (TS _ 14) }
+ ';' { PT _ (TS _ 15) }
+ '<' { PT _ (TS _ 16) }
+ '<=' { PT _ (TS _ 17) }
+ '=' { PT _ (TS _ 18) }
+ '==' { PT _ (TS _ 19) }
+ '>' { PT _ (TS _ 20) }
+ '>=' { PT _ (TS _ 21) }
+ '[' { PT _ (TS _ 22) }
+ ']' { PT _ (TS _ 23) }
+ 'bool' { PT _ (TS _ 24) }
+ 'else' { PT _ (TS _ 25) }
+ 'false' { PT _ (TS _ 26) }
+ 'fun' { PT _ (TS _ 27) }
+ 'if' { PT _ (TS _ 28) }
+ 'int' { PT _ (TS _ 29) }
+ 'print' { PT _ (TS _ 30) }
+ 'ref' { PT _ (TS _ 31) }
+ 'return' { PT _ (TS _ 32) }
+ 'true' { PT _ (TS _ 33) }
+ 'var' { PT _ (TS _ 34) }
+ 'while' { PT _ (TS _ 35) }
+ '{' { PT _ (TS _ 36) }
+ '||' { PT _ (TS _ 37) }
+ '}' { PT _ (TS _ 38) }
 
 L_ident  { PT _ (TV $$) }
 L_integ  { PT _ (TI $$) }
@@ -118,6 +122,11 @@ Exp6 : '-' Exp6 { ENeg $2 }
   | Exp7 { $1 }
 
 
+Exp7 :: { Exp }
+Exp7 : Ident '(' ListExp ')' { ECall $1 $3 } 
+  | Exp8 { $1 }
+
+
 Exp8 :: { Exp }
 Exp8 : Ident { EVar $1 } 
   | Integer { EInt $1 }
@@ -126,8 +135,10 @@ Exp8 : Ident { EVar $1 }
   | '(' Exp ')' { $2 }
 
 
-Exp7 :: { Exp }
-Exp7 : Exp8 { $1 } 
+ListExp :: { [Exp] }
+ListExp : {- empty -} { [] } 
+  | Exp { (:[]) $1 }
+  | Exp ',' ListExp { (:) $1 $3 }
 
 
 Decl :: { Decl }
@@ -144,7 +155,7 @@ Lvalue : Ident { LIdent $1 }
 
 
 Stm :: { Stm }
-Stm : '{' ListDecl ListStm '}' { SBlock (reverse $2) (reverse $3) } 
+Stm : '{' ListDecl ListFunDef ListStm '}' { SBlock (reverse $2) (reverse $3) (reverse $4) } 
   | Exp ';' { SExp $1 }
   | 'while' '(' Exp ')' Stm { SWhile $3 $5 }
   | 'return' Exp ';' { SReturn $2 }
@@ -157,6 +168,26 @@ Stm : '{' ListDecl ListStm '}' { SBlock (reverse $2) (reverse $3) }
 ListStm :: { [Stm] }
 ListStm : {- empty -} { [] } 
   | ListStm Stm { flip (:) $1 $2 }
+
+
+FunDef :: { FunDef }
+FunDef : 'fun' Ident '(' ListParam ')' '->' Type Stm { FunDef $2 $4 $7 $8 } 
+
+
+ListFunDef :: { [FunDef] }
+ListFunDef : {- empty -} { [] } 
+  | ListFunDef FunDef { flip (:) $1 $2 }
+
+
+Param :: { Param }
+Param : 'var' Ident ':' Type { PVar $2 $4 } 
+  | 'ref' Ident ':' Type { PRef $2 $4 }
+
+
+ListParam :: { [Param] }
+ListParam : {- empty -} { [] } 
+  | Param { (:[]) $1 }
+  | Param ',' ListParam { (:) $1 $3 }
 
 
 

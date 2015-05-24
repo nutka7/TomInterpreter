@@ -30,6 +30,7 @@ data Exp =
  | EMod Exp Exp
  | ENeg Exp
  | ENot Exp
+ | ECall Ident [Exp]
  | EVar Ident
  | EInt Integer
  | EBool BExp
@@ -45,7 +46,7 @@ data Lvalue =
   deriving (Eq,Ord,Show)
 
 data Stm =
-   SBlock [Decl] [Stm]
+   SBlock [Decl] [FunDef] [Stm]
  | SExp Exp
  | SWhile Exp Stm
  | SReturn Exp
@@ -53,5 +54,14 @@ data Stm =
  | SPrint Exp
  | SIf Exp Stm
  | SIfElse Exp Stm Stm
+  deriving (Eq,Ord,Show)
+
+data FunDef =
+   FunDef Ident [Param] Type Stm
+  deriving (Eq,Ord,Show)
+
+data Param =
+   PVar Ident Type
+ | PRef Ident Type
   deriving (Eq,Ord,Show)
 

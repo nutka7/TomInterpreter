@@ -26,17 +26,18 @@ Integer literals //Integer// are nonempty sequences of digits.
 The set of reserved words is the set of terminals appearing in the grammar. Those reserved words that consist of non-letter characters are called symbols, and they are treated in a different way from those that are similar to identifiers. The lexer follows rules familiar from languages like Haskell, C, and Java, including longest match and spacing conventions.
 
 The reserved words used in Tom are the following:
-  | ``bool`` | ``else`` | ``false`` | ``if``
-  | ``int`` | ``print`` | ``return`` | ``true``
-  | ``var`` | ``while`` |  | 
+  | ``bool`` | ``else`` | ``false`` | ``fun``
+  | ``if`` | ``int`` | ``print`` | ``ref``
+  | ``return`` | ``true`` | ``var`` | ``while``
 
 The symbols used in Tom are the following:
   | ( | ) | || | &&
   | == | != | < | >
   | <= | >= | + | -
   | * | / | % | !
-  | [ | ] | : | .
-  | { | } | ; | =
+  | [ | ] | , | :
+  | . | { | } | ;
+  | = | -> |  | 
 
 ===Comments===
 There are no single-line comments in the grammar.Multiple-line comments are  enclosed with /* and */.
@@ -75,17 +76,21 @@ All other symbols are terminals.
   | //Exp6// | -> | ``-`` //Exp6// 
   |  |  **|**  | ``!`` //Exp6// 
   |  |  **|**  | //Exp7// 
+  | //Exp7// | -> | //Ident// ``(`` //[Exp]// ``)`` 
+  |  |  **|**  | //Exp8// 
   | //Exp8// | -> | //Ident// 
   |  |  **|**  | //Integer// 
   |  |  **|**  | //BExp// 
   |  |  **|**  | ``[`` //Exp// ``]`` 
   |  |  **|**  | ``(`` //Exp// ``)`` 
-  | //Exp7// | -> | //Exp8// 
+  | //[Exp]// | -> | **eps**
+  |  |  **|**  | //Exp// 
+  |  |  **|**  | //Exp// ``,`` //[Exp]// 
   | //Decl// | -> | ``var`` //Ident// ``:`` //Type// 
   | //[Decl]// | -> | **eps**
   |  |  **|**  | //Decl// ``.`` //[Decl]// 
   | //Lvalue// | -> | //Ident// 
-  | //Stm// | -> | ``{`` //[Decl]// //[Stm]// ``}`` 
+  | //Stm// | -> | ``{`` //[Decl]// //[FunDef]// //[Stm]// ``}`` 
   |  |  **|**  | //Exp// ``;`` 
   |  |  **|**  | ``while`` ``(`` //Exp// ``)`` //Stm// 
   |  |  **|**  | ``return`` //Exp// ``;`` 
@@ -95,5 +100,13 @@ All other symbols are terminals.
   |  |  **|**  | ``if`` ``(`` //Exp// ``)`` //Stm// ``else`` //Stm// 
   | //[Stm]// | -> | **eps**
   |  |  **|**  | //Stm// //[Stm]// 
+  | //FunDef// | -> | ``fun`` //Ident// ``(`` //[Param]// ``)`` ``->`` //Type// //Stm// 
+  | //[FunDef]// | -> | **eps**
+  |  |  **|**  | //FunDef// //[FunDef]// 
+  | //Param// | -> | ``var`` //Ident// ``:`` //Type// 
+  |  |  **|**  | ``ref`` //Ident// ``:`` //Type// 
+  | //[Param]// | -> | **eps**
+  |  |  **|**  | //Param// 
+  |  |  **|**  | //Param// ``,`` //[Param]// 
 
 

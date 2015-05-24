@@ -23,11 +23,13 @@ EDiv.    Exp5   ::= Exp5 "/" Exp6 ;
 EMod.    Exp5   ::= Exp5 "%" Exp6 ;
 ENeg.    Exp6   ::= "-" Exp6 ;
 ENot.    Exp6   ::= "!" Exp6 ;
+ECall.   Exp7   ::= Ident "(" [Exp] ")" ;
 EVar.    Exp8   ::= Ident ;
 EInt.    Exp8   ::= Integer ;
 EBool.   Exp8   ::= BExp ;
 EIver.   Exp8   ::= "[" Exp "]" ;
 coercions Exp 8 ;
+separator Exp "," ;
 
 Decl. Decl ::= "var" Ident ":" Type ;
 terminator Decl "." ;
@@ -35,7 +37,7 @@ terminator Decl "." ;
 
 LIdent.  Lvalue ::= Ident ;
 
-SBlock.  Stm ::= "{" [Decl] [Stm] "}" ;
+SBlock.  Stm ::= "{" [Decl] [FunDef] [Stm] "}" ;
 SExp.    Stm ::= Exp ";" ;
 SWhile.  Stm ::= "while" "(" Exp ")" Stm ;
 SReturn. Stm ::= "return" Exp ";" ;
@@ -43,7 +45,15 @@ SAssign. Stm ::= Lvalue "=" Exp ";" ;
 SPrint.  Stm ::= "print" Exp ";" ;
 SIf.     Stm ::= "if" "(" Exp ")" Stm ;
 SIfElse. Stm ::= "if" "(" Exp ")" Stm "else" Stm ;
-
 terminator Stm "" ;
 
-entrypoints Stm;
+
+FunDef. FunDef ::= "fun" Ident "(" [Param] ")" "->" Type Stm ;
+terminator FunDef "" ;
+
+PVar. Param ::= "var" Ident ":" Type ;
+PRef. Param ::= "ref" Ident ":" Type ;
+separator Param "," ;
+
+
+entrypoints Stm ;

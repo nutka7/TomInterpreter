@@ -43,6 +43,7 @@ transExp x = case x of
   EMod exp0 exp  -> failure x
   ENeg exp  -> failure x
   ENot exp  -> failure x
+  ECall id exps  -> failure x
   EVar id  -> failure x
   EInt n  -> failure x
   EBool bexp  -> failure x
@@ -61,7 +62,7 @@ transLvalue x = case x of
 
 transStm :: Stm -> Result
 transStm x = case x of
-  SBlock decls stms  -> failure x
+  SBlock decls fundefs stms  -> failure x
   SExp exp  -> failure x
   SWhile exp stm  -> failure x
   SReturn exp  -> failure x
@@ -69,6 +70,17 @@ transStm x = case x of
   SPrint exp  -> failure x
   SIf exp stm  -> failure x
   SIfElse exp stm0 stm  -> failure x
+
+
+transFunDef :: FunDef -> Result
+transFunDef x = case x of
+  FunDef id params type' stm  -> failure x
+
+
+transParam :: Param -> Result
+transParam x = case x of
+  PVar id type'  -> failure x
+  PRef id type'  -> failure x
 
 
 

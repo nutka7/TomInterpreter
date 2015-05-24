@@ -112,11 +112,16 @@ instance Print Exp where
    EMod exp0 exp -> prPrec i 5 (concatD [prt 5 exp0 , doc (showString "%") , prt 6 exp])
    ENeg exp -> prPrec i 6 (concatD [doc (showString "-") , prt 6 exp])
    ENot exp -> prPrec i 6 (concatD [doc (showString "!") , prt 6 exp])
+   ECall id exps -> prPrec i 7 (concatD [prt 0 id , doc (showString "(") , prt 0 exps , doc (showString ")")])
    EVar id -> prPrec i 8 (concatD [prt 0 id])
    EInt n -> prPrec i 8 (concatD [prt 0 n])
    EBool bexp -> prPrec i 8 (concatD [prt 0 bexp])
    EIver exp -> prPrec i 8 (concatD [doc (showString "[") , prt 0 exp , doc (showString "]")])
 
+  prtList es = case es of
+   [] -> (concatD [])
+   [x] -> (concatD [prt 0 x])
+   x:xs -> (concatD [prt 0 x , doc (showString ",") , prt 0 xs])
 
 instance Print Decl where
   prt i e = case e of
@@ -133,7 +138,7 @@ instance Print Lvalue where
 
 instance Print Stm where
   prt i e = case e of
-   SBlock decls stms -> prPrec i 0 (concatD [doc (showString "{") , prt 0 decls , prt 0 stms , doc (showString "}")])
+   SBlock decls fundefs stms -> prPrec i 0 (concatD [doc (showString "{") , prt 0 decls , prt 0 fundefs , prt 0 stms , doc (showString "}")])
    SExp exp -> prPrec i 0 (concatD [prt 0 exp , doc (showString ";")])
    SWhile exp stm -> prPrec i 0 (concatD [doc (showString "while") , doc (showString "(") , prt 0 exp , doc (showString ")") , prt 0 stm])
    SReturn exp -> prPrec i 0 (concatD [doc (showString "return") , prt 0 exp , doc (showString ";")])
@@ -145,5 +150,23 @@ instance Print Stm where
   prtList es = case es of
    [] -> (concatD [])
    x:xs -> (concatD [prt 0 x , prt 0 xs])
+
+instance Print FunDef where
+  prt i e = case e of
+   FunDef id params type' stm -> prPrec i 0 (concatD [doc (showString "fun") , prt 0 id , doc (showString "(") , prt 0 params , doc (showString ")") , doc (showString "->") , prt 0 type' , prt 0 stm])
+
+  prtList es = case es of
+   [] -> (concatD [])
+   x:xs -> (concatD [prt 0 x , prt 0 xs])
+
+instance Print Param where
+  prt i e = case e of
+   PVar id type' -> prPrec i 0 (concatD [doc (showString "var") , prt 0 id , doc (showString ":") , prt 0 type'])
+   PRef id type' -> prPrec i 0 (concatD [doc (showString "ref") , prt 0 id , doc (showString ":") , prt 0 type'])
+
+  prtList es = case es of
+   [] -> (concatD [])
+   [x] -> (concatD [prt 0 x])
+   x:xs -> (concatD [prt 0 x , doc (showString ",") , prt 0 xs])
 
 
