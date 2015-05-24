@@ -1,0 +1,5 @@
+{
+    fun f(var a: int, ref b: int) -> int {
+        f(a, b);
+    }
+}

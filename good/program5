@@ -1,0 +1,38 @@
+/* Performance - 3^11 = ~177k operations take ~12s on students */
+{
+    var a: int.   
+    while (a < 3) {
+    var b: int.
+    a = a + 1;
+    while (b < 3) {
+    var c: int.
+    b = b + 1;
+    while (c < 3) {
+    var d: int.
+    c = c + 1;
+    while (d < 3) {
+    var e: int.
+    d = d + 1;
+    while (e < 3) {
+    var f: int.
+    e = e + 1;
+    while (f < 3) {
+    var g: int.
+    f = f + 1;
+    while (g < 3) {
+    var h: int.
+    g = g + 1;
+    while (h < 3) {
+    var i: int.
+    h = h + 1;
+    while (i < 3) {
+    var j: int.
+    i = i + 1;
+    while (j < 3) {
+    var k: int.
+    j = j + 1;
+    while (k < 3) {
+    var l: int.
+    k = k + 1;
+    }}}}}}}}}}}
+}
