@@ -11,13 +11,11 @@ import AbsTom
 
 type Semantics = ReaderT Env (ErrorT String (StateT Stor IO))
 
-type Var = String
 type Loc = Int
-type Env = M.Map Var Loc
+type Env = M.Map Ident Loc
 data Stor = Stor { nextLoc :: Loc, memory :: M.Map Loc Val }
-    deriving (Show, Eq)
-
-data Val = VInt Integer | VBool Bool deriving (Show, Eq)
+data Val = VInt Integer | VBool Bool | VFun ([(Loc, IsTmp)] -> Semantics Val)
+type IsTmp = Bool
 
 initEnv :: Env
 initEnv = M.empty
@@ -28,11 +26,11 @@ initStor = Stor 0 M.empty
 runStm :: Stm -> IO (Either String (Maybe Val), Stor)
 runStm stm = runStateT(runErrorT(runReaderT (exec stm) initEnv)) initStor
 
-resolve :: Var -> Semantics Loc
-resolve var = do
-    mloc <- asks (M.lookup var)
+resolve :: Ident -> Semantics Loc
+resolve name = do
+    mloc <- asks (M.lookup name)
     case mloc of
-        Nothing -> throwError ("RuntimeError -- unbound variable: " ++ show var)
+        Nothing -> throwError ("RuntimeError -- unbound name: " ++ show name)
         Just loc -> return loc
 
 fetch :: Loc -> Semantics Val
@@ -59,9 +57,31 @@ free loc = do
     modify $ \s -> s { memory = M.delete loc mem }
 
 {- Expressions -}
+
+evalToLoc :: Lvalue -> Semantics Loc
+evalToLoc (LIdent ident) = resolve ident
+
+evalArg :: Exp -> Semantics (Loc, IsTmp)
+
+evalArg (ELvalue lval) = do
+    loc <- evalToLoc lval
+    return (loc, False)
+
+evalArg e = do
+    val <- eval e
+    loc <- alloc
+    write loc val
+    return (loc, True)
+    
 eval :: Exp -> Semantics Val
 
-eval (ELvalue (Ident var)) = resolve var >>= fetch
+eval (ECall name es) = do
+    fLoc <- resolve name
+    VFun f <- fetch fLoc
+    argLocs <- mapM evalArg es
+    f argLocs
+
+eval (ELvalue lval) = evalToLoc lval >>= fetch
 
 eval (EInt i) = return $ VInt i
 
@@ -125,6 +145,7 @@ intBinIntOp op eL eR = do
     VInt iR <- eval eR
     return $ VInt $ iL `op` iR
 
+
 exec :: Stm -> Semantics (Maybe Val)
 
 exec (SExp e) = eval e >> return Nothing
@@ -148,9 +169,9 @@ exec (SIfElse e stmT stmF) = do
 
 exec (SReturn e) = eval e >>= return . Just
 
-exec (SAssign (LIdent (Ident var)) e) = do
+exec (SAssign (LIdent name) e) = do
     val <- eval e
-    loc <- resolve var
+    loc <- resolve name
     write loc val
     return Nothing
 
@@ -161,10 +182,13 @@ exec (SPrint e) = do
         VInt  i -> liftIO $ putStrLn $ show i
     return Nothing
 
-exec (SBlock declList stmList) = do
-    (blockEnv, locList) <- declVars declList
-    rval <- local (const blockEnv) (execStms stmList)
-    mapM_ free locList
+exec (SBlock varList funList stmList) = do
+    env <- ask
+    (env',  locList1) <- defVars env  varList
+    (env'', locList2) <- defFuns env' funList
+    
+    rval <- local (const env'') (execStms stmList)
+    mapM_ free (locList1 ++ locList2)
     return rval
 
 execStms :: [Stm] -> Semantics (Maybe Val)
@@ -174,20 +198,72 @@ appendStm :: Maybe Val -> Stm -> Semantics (Maybe Val)
 appendStm Nothing stm = exec stm
 appendStm rval _ = return rval
 
-bind :: Var -> Loc -> Env -> Env
+
+bind :: Ident -> Loc -> Env -> Env
 bind = M.insert
 
-declVars :: [Decl] -> Semantics (Env, [Loc])
-declVars declList = do
-    env <- ask
-    foldM declVar (env, []) declList
+bindMany :: [(Ident, Loc)] -> Env -> Env
+bindMany = flip $ foldl (\env x -> (uncurry bind) x env)
 
-declVar :: (Env, [Loc]) -> Decl -> Semantics (Env, [Loc])
-declVar (env, locList) d = do
-    let Decl (Ident var) varT = d
+defVars :: Env -> [Decl] -> Semantics (Env, [Loc])
+defVars env varList = do 
+    l <- mapM defVar varList
+    let env' = bindMany l env
+        locList = snd . unzip $ l
+    return (env', locList)
+
+defVar :: Decl -> Semantics (Ident, Loc)
+defVar (Decl name varT) = do
     loc <- alloc
     case varT of
         TInt  -> write loc (VInt 0)
         TBool -> write loc (VBool False)
-    let env' = bind var loc env
-    return (env', loc:locList)
+    return (name, loc)
+
+defFuns :: Env -> [FunDef] -> Semantics (Env, [Loc])
+defFuns env funList = do
+    res@(env', locList) <- preDefFuns env funList
+    let funs = map (createFun env') funList 
+    mapM_ (uncurry write) (zip locList funs)
+    return res
+
+preDefFuns :: Env -> [FunDef] -> Semantics (Env, [Loc])
+preDefFuns env funList = do
+    l <- mapM preDefFun funList
+    let env' = bindMany l env
+        locList = snd . unzip $ l
+    return (env', locList)
+
+preDefFun :: FunDef -> Semantics (Ident, Loc)
+preDefFun (FunDef name _ _ _) = do
+    loc <- alloc
+    return (name, loc)
+
+createFun :: Env -> FunDef -> Val
+createFun env (FunDef name params _ stm) = VFun $ \locList -> do
+    l <- mapM (uncurry defPar) (zip locList params)
+    let (idents, locs, isTmps) = unzip3 l
+        env' = bindMany (zip idents locs) env
+        tmpLocs = fst . unzip . filter snd $ zip locs isTmps
+    rval <- local (const env') (exec stm)
+    mapM_ free tmpLocs
+    case rval of
+        Just val -> return val
+        Nothing -> throwError ("Nothing returned in call to: " ++ show name)
+
+defPar :: (Loc, IsTmp) -> Param -> Semantics (Ident, Loc, IsTmp)
+defPar (loc, False) (PRef name _) = return (name, loc, False)
+defPar (loc, True)  (PVar name _) = return (name, loc, True)
+defPar (loc, False) (PVar name _) = do
+    loc' <- alloc
+    val <- fetch loc
+    write loc' val
+    return (name, loc', True)
+
+
+
+{- Instances -}
+instance Eq Val where
+    VBool bL == VBool bR = bL == bR
+    VInt iL == VInt iR = iL == iR
+    _ == _ = error "Compared incomparable values."
