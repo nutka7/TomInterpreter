@@ -1,0 +1,20 @@
+/* Functions - mutual recursion */
+{
+    fun f(var a: int) -> bool {
+        print true;
+        if (a > 0) {
+            g(a-1);
+        }
+        return true;
+    }
+    
+    fun g(var a: int) -> bool {
+        print false;
+        if (a > 0) {
+            f(a-2);
+        }
+        return true;
+    }
+    f(9);
+}
+/* Program should print four "True" and three "False" */

@@ -1,5 +1,13 @@
+/* Functions -- passing by value and by reference */
 {
+    var x: int.
+    var y: int.
     fun f(var a: int, ref b: int) -> int {
-        f(a, b);
+        a = a + 1;
+        b = b + 1;
+        return a + b;
     }
+    print f(x, y);
+    print x;
+    print y;
 }

@@ -1,0 +1,26 @@
+/* Nested functions */
+{
+    var q: int.
+    fun f (ref a: int) -> int {
+        var c: int.
+        fun inner1 () -> bool {
+            a = a + 1;
+            return true;
+        }
+        fun inner2 () -> bool {
+            c = c + 1;
+            print c;
+            print q;
+            return true;
+        }
+        c = 10;
+        inner1();
+        inner2();
+        inner1();
+        return true;
+    }
+    q = 20;
+    f(q);
+    print q;
+}
+/* Program should print  "11, 21, 22". */
