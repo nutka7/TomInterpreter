@@ -114,18 +114,18 @@ eval (ENeq eL eR) = do
 eval (EOr eL eR)  = boolBinBoolOp (||) eL eR
 eval (EAnd eL eR) = boolBinBoolOp (&&) eL eR
 
-{- Binary operators with integer arguments returning integer -}
+{- Binary operators with integer arguments returning boolean -}
 eval (ELt eL eR)  = boolBinIntOp (<)  eL eR
 eval (EGt eL eR)  = boolBinIntOp (>)  eL eR
 eval (ELte eL eR) = boolBinIntOp (<=) eL eR
 eval (EGte eL eR) = boolBinIntOp (>=) eL eR
 
-{- Binary operators with integer arguments returning boolean -}
+{- Binary operators with integer arguments returning integer -}
 eval (EAdd eL eR) = intBinIntOp (+) eL eR
 eval (ESub eL eR) = intBinIntOp (-) eL eR
 eval (EMul eL eR) = intBinIntOp (*) eL eR
-eval (EDiv eL eR) = intBinIntOp quot eL eR
-eval (EMod eL eR) = intBinIntOp rem  eL eR
+eval (EDiv eL eR) = intBinIntOpNoRZero quot eL eR
+eval (EMod eL eR) = intBinIntOpNoRZero rem  eL eR
 
 boolBinBoolOp :: (Bool -> Bool -> Bool) -> Exp -> Exp -> Semantics Val
 boolBinBoolOp op eL eR = do
@@ -144,6 +144,13 @@ intBinIntOp op eL eR = do
     VInt iL <- eval eL
     VInt iR <- eval eR
     return $ VInt $ iL `op` iR
+
+intBinIntOpNoRZero op eL eR = do
+    VInt iL <- eval eL
+    VInt iR <- eval eR
+    when (iR == 0) $ throwError "RuntimeError -- Zero on the right side of \"/\" or \"%\""
+    return $ VInt $ iL `op` iR
+
 
 
 exec :: Stm -> Semantics (Maybe Val)
@@ -249,10 +256,11 @@ createFun env (FunDef name params _ stm) = VFun $ \locList -> do
     mapM_ free tmpLocs
     case rval of
         Just val -> return val
-        Nothing -> throwError ("Nothing returned in call to: " ++ show name)
+        Nothing -> let Ident f = name in
+                       throwError ("RuntimeError -- nothing returned in call to: " ++ f)
 
 defPar :: (Loc, IsTmp) -> Param -> Semantics (Ident, Loc, IsTmp)
-defPar (loc, False) (PRef name _) = return (name, loc, False)
+defPar (loc, isTmp) (PRef name _) = return (name, loc, isTmp)
 defPar (loc, False) (PFun name _) = return (name, loc, False)
 defPar (loc, True)  (PVar name _) = return (name, loc, True)
 defPar (loc, False) (PVar name _) = do

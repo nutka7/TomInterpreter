@@ -1,0 +1,11 @@
+/* RuntimeError -- division by zero */
+{
+    var x: int.
+    var y: int.
+    
+    x = 10;
+    y = 5;
+    print x / y;
+    y = 0;
+    print x / y;
+}

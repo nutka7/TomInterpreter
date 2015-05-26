@@ -1,0 +1,10 @@
+/* RuntimeError - function doesn't return */
+{
+    var a: int.
+    fun f (ref x: int) -> int {
+        x = x / 2;
+    }
+    a = 5;
+    f(10);
+}
+/* Note we can pass rvalues by reference. */

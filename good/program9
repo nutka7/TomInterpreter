@@ -13,5 +13,4 @@
     print apply(q, 5);
     print apply(p, 2);
 }
-/* We expect 25 and 4. 
- * As you can see we can pass rvalues by reference as well. */
+/* We expect 25 and 4. */
