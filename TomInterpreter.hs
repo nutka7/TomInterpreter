@@ -253,14 +253,13 @@ createFun env (FunDef name params _ stm) = VFun $ \locList -> do
 
 defPar :: (Loc, IsTmp) -> Param -> Semantics (Ident, Loc, IsTmp)
 defPar (loc, False) (PRef name _) = return (name, loc, False)
+defPar (loc, False) (PFun name _) = return (name, loc, False)
 defPar (loc, True)  (PVar name _) = return (name, loc, True)
 defPar (loc, False) (PVar name _) = do
     loc' <- alloc
     val <- fetch loc
     write loc' val
     return (name, loc', True)
-
-
 
 {- Instances -}
 instance Eq Val where

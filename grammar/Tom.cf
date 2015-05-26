@@ -1,9 +1,11 @@
 comment "/*" "*/" ;
 
-TInt.  Type1 ::= "int" ;
-TBool. Type1 ::= "bool" ;
-coercions Type 1 ;
-
+TInt.  Type2 ::= "int" ;
+TBool. Type2 ::= "bool" ;
+TFun.  Type1 ::= "(" [Type] ")" "->" Type2 ;
+_.     Type  ::= Type2 ;
+_.     Type  ::= Type1 ;
+separator Type "," ;
 
 BTrue.   BExp   ::= "true" ;
 BFalse.  BExp   ::= "false" ;
@@ -31,7 +33,7 @@ EIver.   Exp8   ::= "[" Exp "]" ;
 coercions Exp 8 ;
 separator Exp "," ;
 
-Decl. Decl ::= "var" Ident ":" Type ;
+Decl. Decl ::= "var" Ident ":" Type2 ;
 terminator Decl "." ;
 
 
@@ -48,11 +50,12 @@ SIfElse. Stm ::= "if" "(" Exp ")" Stm "else" Stm ;
 terminator Stm "" ;
 
 
-FunDef. FunDef ::= "fun" Ident "(" [Param] ")" "->" Type Stm ;
+FunDef. FunDef ::= "fun" Ident "(" [Param] ")" "->" Type2 Stm ;
 terminator FunDef "" ;
 
-PVar. Param ::= "var" Ident ":" Type ;
-PRef. Param ::= "ref" Ident ":" Type ;
+PVar. Param ::= "var" Ident ":" Type2 ;
+PRef. Param ::= "ref" Ident ":" Type2 ;
+PFun. Param ::= "fun" Ident ":" Type1 ;
 separator Param "," ;
 
 

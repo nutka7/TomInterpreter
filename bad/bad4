@@ -1,0 +1,6 @@
+/* Syntax error - function returning function */
+{
+    fun f() -> (int) -> int {}
+}
+/* It is important to notice
+ * that language limitations are incorporated in the grammar. */

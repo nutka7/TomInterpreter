@@ -1,0 +1,17 @@
+/* Passing function as parameter */
+{
+    fun apply(fun f: (int) -> int, var x: int) -> int {
+        return f(x);
+    }
+    fun q(var a: int) -> int {
+        return a * a;
+    }
+    fun p(ref b: int) -> int {
+        b = 2 * b;
+        return b;
+    }
+    print apply(q, 5);
+    print apply(p, 2);
+}
+/* We expect 25 and 4. 
+ * As you can see we can pass rvalues by reference as well. */
