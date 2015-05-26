@@ -124,8 +124,8 @@ eval (EGte eL eR) = boolBinIntOp (>=) eL eR
 eval (EAdd eL eR) = intBinIntOp (+) eL eR
 eval (ESub eL eR) = intBinIntOp (-) eL eR
 eval (EMul eL eR) = intBinIntOp (*) eL eR
-eval (EDiv eL eR) = intBinIntOp div eL eR
-eval (EMod eL eR) = intBinIntOp mod eL eR
+eval (EDiv eL eR) = intBinIntOp quot eL eR
+eval (EMod eL eR) = intBinIntOp rem  eL eR
 
 boolBinBoolOp :: (Bool -> Bool -> Bool) -> Exp -> Exp -> Semantics Val
 boolBinBoolOp op eL eR = do
