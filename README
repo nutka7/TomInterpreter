@@ -1,19 +1,20 @@
 **Tom Macieszczak tm337620**
 
-Pierwsza wersja języka.
+Druga wersja języka.
 
 Narazie obsługuje to, co w gramatyce grammar/Tom.cf, choć jest gotowy na rozszerzenie.
-Działa return, przesłanianie zmiennych i z wyrażenia można zrobić instrukcję,
-więc dodanie funkcji nie powinno stanowić problemu.
+Działa przesłanianie, funkcje wzajemnie rekursywne, funkcje zagnieżdzone,
+przekazywanie parametrów przez wartość i referencję.
+
 
 Korzystam z BNFC, który na podstawie gramatyki stworzył frontend kompilatora.
 Sam interpreter to przerobiony program TestTom.hs, który jest standardowo tworzony przez BNFC.
 
 Część, którą sam napisałem, to TomInterpreter.hs, który zmienia drzewo programu w obliczenie monadyczne.
-Korzystam z monady **ReaderT Env (ErrorT String (StateT Stor IO))**, z klasyczny środowiskiem i stanem.
+Korzystam z monady **ReaderT Env (ErrorT String (StateT Stor IO))**, z klasycznym środowiskiem i stanem.
 Z ciekawszych rzeczy, instrukcja może zwrócić Nothing lub Maybe Value, w zależności czy był return, czy nie.
 To jest mój pomysł na zrobienie funkcji.
 
-Zagnieździłem monadę IO, tak więc output wypisuje się od razu w czasie interpretacji.
+Zagnieździłem monadę IO, output wypisuje się od razu w czasie interpretacji.
 Użyłem także ErrorT, by w przyszłości dodać obsługę błędów wykonania.
 Póki co brakuje type-checka...
