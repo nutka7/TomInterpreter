@@ -23,35 +23,37 @@ initEnv = M.singleton rtypeId TInt
 staticCheck :: Stm -> Either String ()
 staticCheck stm = runIdentity $ runErrorT $ runReaderT (checkStm stm) initEnv
 
+extractId :: Ident -> String
+extractId (Ident id) = id
+
 resolve :: Ident -> StaticCheck Type
 resolve name = do
     mtype <- asks (M.lookup name)
     case mtype of
-        Nothing -> throwError ("Unbound name: " ++ show name)
+        Nothing -> throwError ("Unbound name: " ++ extractId name)
         Just t -> return t
 
 assertFun :: Type -> StaticCheck ()
 assertFun (TFun _ _) = return ()
 assertFun t = throwError $
-    "Type mismatch -- expected funtion, actual: " ++
-    show t
+    "Type mismatch -- expected funtion, actual: " ++ show t
 
 assertNotFun :: Type -> StaticCheck ()
 assertNotFun funT@(TFun _ _) = throwError $
-    "Type mismatch -- one of " ++
-    show [TInt, TBool] ++
-    " expected, actual: " ++
-    show funT
+    "Type mismatch -- one of "
+    ++ show [TInt, TBool]
+    ++ " expected, actual: "
+    ++ show funT
 assertNotFun _ = return ()
 
 assertType :: Type -> Type -> StaticCheck ()
 assertType expected actual = 
     when (actual /= expected) $ 
         throwError (
-            "Type mismatch -- expected: " ++
-            show expected ++
-            ", actual: " ++
-            show actual)
+            "Type mismatch -- expected: "
+            ++ show expected
+            ++ ", actual: "
+            ++ show actual)
 
 assertExp :: Type -> Exp -> StaticCheck ()
 assertExp expected e = do
@@ -66,11 +68,10 @@ checkExp (ECall name es) = do
     assertFun fun
     let TFun params rType = fun
     when (length es /= length params) $ 
-        let Ident id = name in throwError $
-            "Actual argument list in call" ++
-            "and formal parameter list of " ++
-            id ++
-            " have different length"
+        throwError $
+            "Actual argument list and formal parameter list in call to "
+            ++ extractId name
+            ++ " have different length"
     args <- mapM checkExp es
     mapM_ (uncurry assertType) (zip params args)
     return rType
@@ -172,11 +173,10 @@ assertNotDefined :: Ident -> StaticDecl ()
 assertNotDefined name = do
     env <- get
     when (M.member name env) $ 
-        let Ident id = name
-        in throwError $
-            "Redefinition of a name " ++
-             id ++ 
-             " in the same scope"
+        throwError $
+            "Redefinition of "
+             ++ extractId name 
+             ++ " within the same scope"
 
 safeBind :: Ident -> Type -> StaticDecl ()
 safeBind name t = do
