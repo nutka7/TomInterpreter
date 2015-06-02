@@ -13,7 +13,7 @@ import SkelTom
 import PrintTom
 import AbsTom
 import TomInterpreter
-
+import StaticCheck
 
 import ErrM
 
@@ -35,7 +35,10 @@ run v p s = let ts = myLLexer s in case p ts of
                           putStrV v "Tokens:"
                           putStrV v $ show ts
                           hPutStrLn stderr s
-           Ok  tree -> do runFromTree tree
+           Ok  tree -> case staticCheck tree of
+                Left s -> do hPutStrLn stderr "\nStatic check failed...\n"
+                             hPutStrLn stderr s
+                _ -> runFromTree tree
 
 runFromTree :: Stm -> IO ()
 runFromTree stm = do

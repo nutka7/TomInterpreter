@@ -17,7 +17,7 @@
         inner1();
         inner2();
         inner1();
-        return true;
+        return 0;
     }
     q = 20;
     f(q);

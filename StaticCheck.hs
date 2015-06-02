@@ -90,7 +90,7 @@ checkExp (EEq eL eR) = do
     assertNotFun tL
     assertNotFun tR
     assertType tL tR
-    return TInt
+    return TBool
 
 checkExp (ENeq eL eR) = checkExp (EEq eL eR)
 
@@ -156,7 +156,7 @@ checkStm (SBlock varList funList stmList) = do
 defineNames :: StaticDecl Env -> StaticCheck Env
 defineNames m =
     ReaderT $ \env ->
-        let newScopePacked = runIdentity $ evalStateT (runErrorT m) initEnv
+        let newScopePacked = runIdentity $ evalStateT (runErrorT m) M.empty
         in ErrorT $ Identity $
             case newScopePacked of
                 Right newScope -> Right $ M.union newScope env
@@ -200,7 +200,7 @@ checkFun :: FunDef -> StaticCheck ()
 checkFun (FunDef name params rType stm) = do
     env <- defineNames $ buildParamScope params
     let env' = M.insert rtypeId rType env
-    checkStm stm
+    local (const env') (checkStm stm)
 
 buildParamScope :: [Param] -> StaticDecl Env
 buildParamScope params = do
