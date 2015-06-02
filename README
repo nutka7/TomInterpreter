@@ -1,20 +1,31 @@
 **Tom Macieszczak tm337620**
 
-Druga wersja języka.
+Ostateczna wersja języka.
 
-Narazie obsługuje to, co w gramatyce grammar/Tom.cf, choć jest gotowy na rozszerzenie.
 Działa przesłanianie, funkcje wzajemnie rekursywne, funkcje zagnieżdzone,
-przekazywanie parametrów przez wartość i referencję.
+przekazywanie parametrów przez wartość i referencję, jak i parametry funkcyjne.
+
+Można printować na wyjście w czasie rzeczywistym dzięki zagnieżdzonej monadzie IO.
+
+Zaimplementowany został static check. Sprawdza poprawność typów, zgodność sygnatur,
+wykrywa redefiniowanie nazw na tym samym poziomie oraz niezwiązane nazwy.
+
+Interpreter obsługuje błędy wykonania.
+Mogą to być dzielenie przez zero, badź brak powrotu z funkcji.
+
+Interpreter dba o zwalnianie pamięci zgodnie ze stosowym modelem wykonania.
+Na koniec wykonania programu, zawsze sprawdzane jest, czy nie było wycieku.
 
 
 Korzystam z BNFC, który na podstawie gramatyki stworzył frontend kompilatora.
 Sam interpreter to przerobiony program TestTom.hs, który jest standardowo tworzony przez BNFC.
 
-Część, którą sam napisałem, to TomInterpreter.hs, który zmienia drzewo programu w obliczenie monadyczne.
-Korzystam z monady **ReaderT Env (ErrorT String (StateT Stor IO))**, z klasycznym środowiskiem i stanem.
+W czasie wykonania korzystam z monady **ReaderT Env (ErrorT String (StateT Stor IO))**, z klasycznym środowiskiem i stanem.
 Z ciekawszych rzeczy, instrukcja może zwrócić Nothing lub Maybe Value, w zależności czy był return, czy nie.
-To jest mój pomysł na zrobienie funkcji.
+Funkcje są zaimplementowane jako wartości i trzymane w stanie, co pozwala mi na użycie pięknego modelu, gdzie funkcja jest typu
+[Lokacja] -> obliczenie monadyczne.
 
-Zagnieździłem monadę IO, output wypisuje się od razu w czasie interpretacji.
-Użyłem także ErrorT, by w przyszłości dodać obsługę błędów wykonania.
-Póki co brakuje type-checka...
+W type-checku fajne jest, że użyłem dwóch różnych monad, by odzwierciedlić,
+że instrukcje i wyrażenia nie zmieniają środowiska nazw, a deklaracje owszem.
+
+W folderach good i bad jest wiele przykładów dobrze ilustrujących funkcjonalności mojego rozwiązania.
