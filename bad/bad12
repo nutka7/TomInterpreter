@@ -1,0 +1,6 @@
+/* Static error -- redefition of a name at block scope */
+{
+    var x: int.
+    var y: bool.
+    fun x () -> int {}
+}

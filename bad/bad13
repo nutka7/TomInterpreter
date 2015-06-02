@@ -1,0 +1,4 @@
+/* StaticError -- Redefition of a name at parameter scope */
+{
+    fun f (fun x: (int, int) -> int, var z: bool, fun x: (bool) -> bool) -> int { return 0; }
+}

@@ -1,0 +1,7 @@
+/* StaticError -- Bad length of argument list in call */
+{
+    fun f (var x: int, ref y: bool) -> bool {
+        return x > 0 && y;
+    }
+    f(5, true, false, -3);
+}

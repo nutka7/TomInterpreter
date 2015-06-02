@@ -1,0 +1,6 @@
+/* StaticError -- bad type in return */
+{
+    fun f () -> bool {
+        return f;
+    }
+}

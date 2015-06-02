@@ -1,0 +1,5 @@
+/* StaticError -- bad type in assignment */
+{
+    var x: int.
+    x = true;
+}

@@ -1,0 +1,8 @@
+/* StaticError -- Use of an undefined variable */
+{
+    var x: int.
+    { 
+        var y: int.
+        print x * y * z;
+    }
+}

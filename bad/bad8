@@ -1,0 +1,8 @@
+/* StaticError -- bad type in expression */
+{
+    fun f (var x: int) -> int {
+        return x;
+    }
+
+    print 2 == f;
+}
