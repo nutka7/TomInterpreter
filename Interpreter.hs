@@ -3,7 +3,7 @@ module Main where
 
 import qualified Data.Map as M
 
-import System.IO
+import System.IO ( hPutStrLn, hGetContents, readFile, stdin, stderr )
 import System.Environment ( getArgs, getProgName )
 import System.Exit ( exitFailure, exitSuccess )
 
